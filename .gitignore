@@ -1,0 +1,92 @@
+# Python virtual environments
+venv/
+env/
+.venv/
+.env/
+ENV/
+
+# Conda environments
+conda_env/
+*.conda
+.conda/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Machine Learning model weights and large files
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.model
+*.pkl
+*.joblib
+
+# Video and large data files
+*.avi
+*.mp4
+*.mkv
+*.mov
+*.webm
+output_videos/
+datasets/
+data/
+UCF-101/
+
+# IDE and Editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logging files
+*.log
+logs/
+
+# Environment files (potentially containing secrets)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Pytest
+.pytest_cache/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Tensorboard logs
+runs/
+tb_logs/
+
+# Temporary files
+temp/
+tmp/
+
+# Weights and Biases
+wandb/
+
+# Miscellaneous
+.python-version
