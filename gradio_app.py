@@ -7,6 +7,8 @@ Members:
 - Ali Ashraf (i210756))
 
 '''
+
+import tensorflow as tf
 import gradio as gr
 import numpy as np
 import os
@@ -17,9 +19,11 @@ from utils.video_utils import (
     normalize_video, 
     save_side_by_side_video,
     get_available_classes, 
-    get_videos_in_class
+    get_videos_in_class,
+    load_and_preprocess_predrnn_video,
+    save_predrnn_side_by_side_video
 )
-
+from utils.modal_loader import PredRNNModel
 # Import model loader
 from utils.modal_loader import ModelLoader
 model_loader = ModelLoader()
@@ -28,6 +32,10 @@ model_loader = ModelLoader()
 BASE_VIDEO_DIR = 'UCF101/test'
 OUTPUT_VIDEO_DIR = 'output_videos'
 os.makedirs(OUTPUT_VIDEO_DIR, exist_ok=True)
+
+def predict_with_predrnn(model, input_frames, prediction_length=5):
+    predictions = model.predict(input_frames)
+    return predictions[:, -prediction_length:]
 
 def predict_video(model_name, class_name, video_name):
     """
@@ -43,6 +51,7 @@ def predict_video(model_name, class_name, video_name):
     """
     # Construct full video path
     video_path = os.path.join(BASE_VIDEO_DIR, class_name, video_name)
+    output_path = 'output_videos'
     
     if model_name == 'ConvLSTM':
         # Load video
@@ -77,7 +86,29 @@ def predict_video(model_name, class_name, video_name):
         return output_path
 
     elif model_name == 'PredRNN':
-        pass
+         # Load and preprocess video
+        input_frames, gt_frames = load_and_preprocess_predrnn_video(video_path)
+        print("Input frames shape",input_frames.shape)
+        # # Load PredRNN model and predict frames
+        predrnn = PredRNNModel("weights/predrnn_model.keras")
+        predicted_frames = predict_with_predrnn(predrnn, input_frames)
+
+        # Save side-by-side video
+        output_path = os.path.join(
+            OUTPUT_VIDEO_DIR,
+            f"{model_name}_{class_name}_{video_name.replace('.avi', '.mp4')}"
+        )
+
+        input_frames = tf.squeeze(input_frames, axis=0)  # Remove the first dimension
+        predicted_frames = tf.squeeze(predicted_frames, axis=0)  # Remove the first dimension
+        gt_frames = tf.squeeze(gt_frames, axis=0)  
+        org_v = np.concatenate((input_frames, gt_frames), axis=0)
+        pre_v = np.concatenate((input_frames, predicted_frames), axis=0)
+
+        save_predrnn_side_by_side_video(org_v, pre_v, output_path)
+
+
+        return output_path
     elif model_name == 'Transformer':
         pass
 

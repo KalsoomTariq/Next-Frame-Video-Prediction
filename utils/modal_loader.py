@@ -11,6 +11,8 @@ Members:
 import torch
 import torch.nn as nn
 import numpy as np
+import numpy as np  # For array manipulations
+import tensorflow as tf  # For loading and running the PredRNN model
 
 class ModelLoader:
     def __init__(self):
@@ -109,62 +111,6 @@ class ModelLoader:
         
         return model
 
-    def load_predrnn(self):
-            """
-            Load PredRNN model with pre-trained weights
-            
-            Returns:
-                nn.Module: Loaded PredRNN model
-            """
-            class PredRNN(nn.Module):
-                def __init__(self, num_channels, num_kernels, kernel_size, frame_size, num_layers):
-                    super(PredRNN, self).__init__()
-                    self.layers = nn.ModuleList()
-                    for i in range(num_layers):
-                        in_ch = num_channels if i == 0 else num_kernels
-                        self.layers.append(nn.Conv2d(
-                            in_channels=in_ch, 
-                            out_channels=num_kernels, 
-                            kernel_size=kernel_size, 
-                            padding=kernel_size // 2
-                        ))
-                    self.final_conv = nn.Conv2d(
-                        in_channels=num_kernels, 
-                        out_channels=num_channels, 
-                        kernel_size=kernel_size, 
-                        padding=kernel_size // 2
-                    )
-                
-                def forward(self, X):
-                    batch_size, seq_len, _, height, width = X.size()
-                    outputs = []
-                    for t in range(seq_len):
-                        frame = X[:, t]
-                        for layer in self.layers:
-                            frame = torch.relu(layer(frame))
-                        if t >= seq_len - 5:  # Collect last 5 frames
-                            outputs.append(self.final_conv(frame))
-                    return torch.stack(outputs, dim=1)
-
-            # Instantiate model
-            model = PredRNN(
-                num_channels=1,
-                num_kernels=64,
-                kernel_size=3,
-                frame_size=(64, 64),
-                num_layers=3
-            )
-            
-            # Load pre-trained weights
-            weights_path = 'path_to_predrnn_weights.pth'
-            try:
-                model.load_state_dict(torch.load(weights_path, map_location=torch.device('cpu')))
-                print(f"Weights loaded from {weights_path}")
-            except FileNotFoundError:
-                print(f"Pre-trained weights not found at {weights_path}, using randomly initialized model.")
-            
-            return model
-
     def load_transformer(self):
         """
         Load Transformer model with pre-trained weights
@@ -246,3 +192,42 @@ class ModelLoader:
         predictions = (predictions * 255).astype(np.uint8)
         
         return predictions
+    
+
+
+class PredRNNModel:
+    def __init__(self, model_path):
+        """
+        Initialize the PredRNNModel by loading the pre-trained model weights.
+        """
+        self.model = self.load_predrnn_model(model_path)
+
+    def load_predrnn_model(self, model_path):
+        """
+        Load the PredRNN model with pre-trained weights.
+
+        Args:
+            model_path (str): Path to the saved model.
+        
+        Returns:
+            tf.keras.Model: Loaded PredRNN model.
+        """
+        try:
+            model = tf.keras.models.load_model(model_path)
+            print(f"PredRNN model loaded successfully from {model_path}")
+            return model
+        except Exception as e:
+            print(f"Error loading PredRNN model: {e}")
+            raise e
+
+    def predict(self, input_frames):
+        """
+        Predict the next frames using the PredRNN model.
+
+        Args:
+            input_frames (np.ndarray): Input frames with shape (batch_size, seq_length, height, width, channels).
+
+        Returns:
+            np.ndarray: Predicted frames with shape (batch_size, prediction_length, height, width, channels).
+        """
+        return self.model.predict(input_frames)
