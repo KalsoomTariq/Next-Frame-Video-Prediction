@@ -7,7 +7,6 @@ This project implements next-frame video prediction using deep learning models s
 - **PredRNN**: A state-of-the-art spatiotemporal model for video prediction.
 - **Transformer**: Transformer architecture applied to video frame prediction.
 - **Gradio Frontend**: A user-friendly interface for testing video prediction models interactively.
-- **Support for Custom Datasets**: The project supports custom video datasets for frame prediction tasks.
 
   
 ### Prerequisites
@@ -57,12 +56,5 @@ We welcome contributions to improve this project! If you have any suggestions, b
 4. Commit your changes with clear and concise commit messages.
 5. Push your changes to your forked repository.
 6. Open a pull request to the main repository.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Acknowledgements
-(TODO)
 
 ---
